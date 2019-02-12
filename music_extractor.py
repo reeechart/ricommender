@@ -48,6 +48,7 @@ def extract_content(directory):
     files = librosa.util.find_files(directory, ext='mp3')
 
     for file in files:
+        print('Extracting ', file, '...')
         music_metadata = []
 
         title, artist, album = load_editorial_metadata(file)
@@ -104,5 +105,5 @@ def save_to_csv(data):
         writer.writerows(data)
 
 if __name__ == '__main__':
-    metadata = extract_content('musics_test')
+    metadata = extract_content('musics')
     save_to_csv(metadata)
