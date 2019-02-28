@@ -33,13 +33,15 @@ def extract_music_content(directory):
         metadata ([string]): list of mp3 metadata with a structure of 
             (file, title, artist, album, mfcc, zcr, tempo, chroma_stft)
     '''
-    all_metadata = [['file', 'title', 'artist', 'album', 'mfcc', 'zcr', 'tempo', 'pitch', 'chroma']]
+    all_metadata = [['id', 'file', 'title', 'artist', 'album', 'mfcc', 'zcr', 'tempo', 'pitch', 'chroma', 'num_frames']]
 
     files = librosa.util.find_files(directory, ext='mp3')
 
-    for file in files:
+    for idx, file in enumerate(files):
         print('Extracting ', file, '...')
         music_metadata = []
+
+        music_metadata.append(idx)
 
         title, artist, album = load_editorial_metadata(file)
         
@@ -74,6 +76,7 @@ def extract_music_content(directory):
 
         chroma_stft = librosa.feature.chroma_stft(y=wf, sr=sr)
         music_metadata.append(np.mean(chroma_stft))
+        music_metadata.append(len(mfcc[0]))
 
         all_metadata.append(music_metadata)
     
@@ -88,11 +91,11 @@ def extract_music_frames(directory):
     Returns:
         metadata ([string]): all frames metadata
     '''
-    all_metadata = [['title', 'artist', 'mean_thirteen_first_mfcc', 'zcr', 'max_chroma']]
+    all_metadata = [['id', 'mean_thirteen_first_mfcc', 'zcr', 'max_chroma']]
 
     files = librosa.util.find_files(directory, ext='mp3')
 
-    for file in files:
+    for idx, file in enumerate(files):
         print('Extracting ', file, '...')
 
         title, artist, _ = load_editorial_metadata(file)
@@ -101,20 +104,16 @@ def extract_music_frames(directory):
 
         mfcc = librosa.feature.mfcc(y=wf, sr=sr)
         mfcc = np.mean(mfcc[:13], axis=0) # take the first 13 mfcc values
-        # print(mfcc.shape)
 
         zcr = librosa.feature.zero_crossing_rate(y=wf)
         zcr = np.mean(zcr, axis=0)
-        # print(zcr.shape)
 
         chroma_stft = librosa.feature.chroma_stft(y=wf, sr=sr)
         chroma_stft_max = np.argmax(chroma_stft, axis=0)
-        # print(chroma_stft_max.shape)
 
         for i in range(len(mfcc)):
             music_frame_metadata = []
-            music_frame_metadata.append(title)
-            music_frame_metadata.append(artist)
+            music_frame_metadata.append(idx)
             music_frame_metadata.append(mfcc[i])
             music_frame_metadata.append(zcr[i])
             music_frame_metadata.append(chroma_stft_max[i])
@@ -129,6 +128,7 @@ def save_to_csv(data, csv_file):
     Args:
         data ([object]): list of metadata to be saved
     '''
+    print('Saving metadata to ', csv_file, '...')
     with open(csv_file, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(data)
