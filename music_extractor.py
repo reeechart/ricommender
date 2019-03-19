@@ -16,12 +16,23 @@ def load_editorial_metadata(audiofile):
         album (string): name of album of the mp3 file
     '''
     audio = eyed3.load(audiofile)
-    # print(audio.tag.artist)
-    # print(audio.tag.title)
-    # print(audio.tag.album)
-    # print(audio.tag.images.get('image/jpeg')) # not working
 
     return audio.tag.title, audio.tag.artist, audio.tag.album
+
+def get_reformatted_music_file_directory(file):
+    '''Returns a reformatted music file directory
+
+    Args:
+        file (string): audio file directory to be reformatted
+
+    Returns:
+        directory (string): reformatted music file directory
+    '''
+
+    splitted_dir = file.split('\\')
+    directory = '/'.join(splitted_dir[-2:])
+    
+    return directory
 
 def extract_music_content(directory):
     '''Extracts mp3 metadata from a specified directory
@@ -45,7 +56,7 @@ def extract_music_content(directory):
 
         title, artist, album = load_editorial_metadata(file)
         
-        music_metadata.append(file)
+        music_metadata.append(get_reformatted_music_file_directory(file))
         music_metadata.append(title)
         music_metadata.append(artist)
         music_metadata.append(album)
@@ -68,11 +79,6 @@ def extract_music_content(directory):
         pitches = pitches[magnitudes > np.median(magnitudes)]
         pitch = librosa.pitch_tuning(pitches)
         music_metadata.append(pitch)
-
-        # Extract beat
-        # beat_times = librosa.frames_to_time(beat_frames, sr=sampling_rate[0])
-        # print(beat_frames)
-        # print(beat_times)
 
         chroma_stft = librosa.feature.chroma_stft(y=wf, sr=sr)
         music_metadata.append(np.mean(chroma_stft))
