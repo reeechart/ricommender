@@ -1,4 +1,23 @@
+# Music Folder
 musics/
 musics_test/
-music_metadata.csv
-music_frame_metadata.csv
+
+# CSV files used for the experiment
+*.csv
+
+# Django
+## Environment variables
+.env
+
+## SQLite Database
+db.sqlite3
+
+## Others
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+
+# Development Stuffs
+.vscode
