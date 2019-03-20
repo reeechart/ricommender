@@ -16,6 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from ricommender_backend.authentication.views import UserLoginView
+from ricommender_backend.authentication.views import UserRegisterView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('user/login/<slug:username>', UserLoginView.as_view(), name='user-login'),
+    path('user/register', UserRegisterView.as_view(), name='user-register'),
 ]

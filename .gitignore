@@ -10,7 +10,7 @@ musics_test/
 .env
 
 ## SQLite Database
-db.sqlite3
+*.sqlite3
 
 ## Others
 *.log
