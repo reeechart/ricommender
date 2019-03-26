@@ -1,5 +1,6 @@
 import os
 
+from django.http import HttpResponseBadRequest
 from django.http import HttpResponse
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
@@ -9,7 +10,10 @@ from django.views.generic import View
 from rest_framework import generics
 from rest_framework.views import APIView
 
+from ricommender_backend.musicstreamer.models import History
 from ricommender_backend.musicstreamer.models import Music
+from ricommender_backend.musicstreamer.serializers import HistoryCreateSerializer
+from ricommender_backend.musicstreamer.serializers import HistoryReadSerializer
 from ricommender_backend.musicstreamer.serializers import MusicSerializer
 
 # Create your views here.
@@ -40,4 +44,12 @@ class MusicRetriever(View):
             except:
                 return HttpResponseNotFound("Not Found")
         else:
-            return HttpResponseNotFound("Not Found")
+            return HttpResponseBadRequest("Invalid Method")
+
+class HistoryCreateView(generics.CreateAPIView):
+    queryset = History.objects.all()
+    serializer_class = HistoryCreateSerializer
+
+class HistoryListView(generics.ListAPIView):
+    queryset = History.objects.all()
+    serializer_class = HistoryReadSerializer
