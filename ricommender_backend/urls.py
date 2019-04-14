@@ -23,6 +23,7 @@ from ricommender_backend.musicstreamer.views import HistoryCreateView
 from ricommender_backend.musicstreamer.views import HistoryListView
 from ricommender_backend.musicstreamer.views import MusicListView
 from ricommender_backend.musicstreamer.views import MusicMetadataView
+from ricommender_backend.musicstreamer.views import MusicRecommender
 from ricommender_backend.musicstreamer.views import MusicRetriever
 
 urlpatterns = [
@@ -31,6 +32,7 @@ urlpatterns = [
     path('user/delete/<slug:username>', UserDeleteView.as_view(), name='user-delete'),
     path('user/register', UserRegisterView.as_view(), name='user-register'),
     path('music/metadata/<slug:id>', MusicMetadataView.as_view(), name='music-metadata'),
+    path('music/recommendation', MusicRecommender.get_top_thirty_recommendation, name='music-recommendation'),
     path('music/stream/<music_id>', MusicRetriever.get_music, name='music-retrieve'),
     path('musics/', MusicListView.as_view(), name='music-list'),
     path('history/add', HistoryCreateView.as_view(), name='history-create'),

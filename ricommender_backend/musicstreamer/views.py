@@ -1,7 +1,8 @@
 import os
 
-from django.http import HttpResponseBadRequest
 from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponseNotAllowed
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
@@ -45,6 +46,15 @@ class MusicRetriever(View):
                 return HttpResponseNotFound("Not Found")
         else:
             return HttpResponseBadRequest("Invalid Method")
+
+class MusicRecommender(View):
+    @classmethod
+    def get_top_thirty_recommendation(cls, request):
+        if (request.method == 'GET'):
+            response_body = "{} {} {}"
+            return HttpResponse(response_body.format(request.GET["user"], request.GET["loc"], request.GET["weather"]))
+        else:
+            return HttpResponseNotAllowed("Method Not Allowed")
 
 class HistoryCreateView(generics.CreateAPIView):
     queryset = History.objects.all()
