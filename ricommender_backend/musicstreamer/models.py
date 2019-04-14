@@ -9,7 +9,7 @@ class Music(models.Model):
     title = models.CharField(_('Title'), max_length=255)
     artist = models.CharField(_('Artist'), max_length=255)
     album = models.CharField(_('Album'), max_length=255)
-    tempo = models.FloatField(_('Tempo'), default=0)
+    tempo = models.DecimalField(_('Tempo'), default=0, max_digits=21, decimal_places=15)
     num_frames = models.IntegerField(_('Number of Frames'), default=0)
     frame_0 = models.IntegerField(_('Frame 0'), default=0)
     frame_1 = models.IntegerField(_('Frame 1'), default=0)
