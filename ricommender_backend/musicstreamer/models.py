@@ -36,17 +36,17 @@ class History(models.Model):
 
     LOCATION_LIST = (OFFICE, GYM, CANTEEN, LIBRARY, TRAVEL)
 
-    SUNNY = 'sunny'
+    CLEAR = 'clear'
     CLOUDY = 'cloudy'
     RAIN = 'rain'
 
     WEATHER_CHOICES = (
-        (SUNNY, _('sunny')),
+        (CLEAR, _('clear')),
         (CLOUDY, _('cloudy')),
         (RAIN, _('rain')),
     )
 
-    WEATHER_LIST = (SUNNY, CLOUDY, RAIN)
+    WEATHER_LIST = (CLEAR, CLOUDY, RAIN)
 
     user = models.ForeignKey(User, related_name='history', on_delete=models.CASCADE)
     location = models.CharField(_('Location'), max_length=64, choices=LOCATION_CHOICES)
