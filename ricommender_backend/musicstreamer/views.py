@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 
 from ricommender_backend.musicstreamer.models import History
 from ricommender_backend.musicstreamer.models import Music
+from ricommender_backend.musicstreamer.recommender import MusicRecommendationCalculator
 from ricommender_backend.musicstreamer.serializers import HistoryCreateSerializer
 from ricommender_backend.musicstreamer.serializers import HistoryReadSerializer
 from ricommender_backend.musicstreamer.serializers import MusicSerializer
@@ -51,7 +52,14 @@ class MusicRecommender(View):
     @classmethod
     def get_top_thirty_recommendation(cls, request):
         if (request.method == 'GET'):
+            username = request.GET["user"]
+            location = request.GET["loc"]
+            weather = request.GET["weather"]
+            all_history = History.objects.select_related("music__id", "music__num_frames", "music__frame_0", "music__frame_1", "music__frame_2", "music__frame_3", "music__frame_4", "music__frame_5", "music__frame_6").all()
+            all_history = all_history.values("user", "location", "weather", "music__id", "music__num_frames", "music__frame_0", "music__frame_1", "music__frame_2", "music__frame_3", "music__frame_4", "music__frame_5", "music__frame_6")
             response_body = "{} {} {}"
+            music_recommendation_calculator = MusicRecommendationCalculator(username, location, weather)
+            music_recommendation_calculator.get_top_thirty_recommendation(all_history)
             return HttpResponse(response_body.format(request.GET["user"], request.GET["loc"], request.GET["weather"]))
         else:
             return HttpResponseNotAllowed("Method Not Allowed")
