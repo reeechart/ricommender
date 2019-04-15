@@ -53,29 +53,45 @@ Args:
 ### How to Install
 
 1. Enter the following command
-    ```pipenv install```
+    ```
+    pipenv install
+    ```
 
 2. Edit `.env` file as necessary, use a shortcut by entering the following command
-    ```cp .env.example .env```
+    ```
+    cp .env.example .env
+    ```
 
 3. Enter the shell of pipenv
-    ```pipenv shell```
+    ```
+    pipenv shell
+    ```
 
 4. Turn on MongoDB database
-    ```mongod --dbpath <path_to_db>```
+    ```
+    mongod --dbpath <path_to_db>
+    ```
 
 5. Run migrations
-    ```python manage.py migrate```
+    ```
+    python manage.py migrate
+    ```
 
 6. (OPTIONAL) Import music metadata CSV to MongoDB
-    ```mongoimport -d <database_name> -c <collection> --type csv --file <csv_file> --headerline```
+    ```
+    mongoimport -d <database_name> -c <collection> --type csv --file <csv_file> --headerline
+    ```
 
 7. Run the Django server
-    ```python manage.py runserver```
+    ```
+    python manage.py runserver
+    ```
 
 ### Creating admin
 1. Enter this command
-    ```python manage.py createsuperuser```
+    ```
+    python manage.py createsuperuser
+    ```
 
 2. Enter the required credentials
 
