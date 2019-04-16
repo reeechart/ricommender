@@ -47,9 +47,6 @@ Args:
     sudo service mongod stop
     ```
 
-
-
-
 ### How to Install
 
 1. Enter the following command
