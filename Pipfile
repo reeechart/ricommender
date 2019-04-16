@@ -8,6 +8,9 @@ django = "*"
 djangorestframework = "*"
 djongo = "*"
 django-pandas = "*"
+scikit-learn = "*"
+numpy = "*"
+scipy = "*"
 
 [dev-packages]
 pylint = "*"
