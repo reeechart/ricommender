@@ -62,8 +62,9 @@ class MusicRecommendationCalculator():
     def _do_latent_clustering(self):
         print('Start clustering')
         latent_estimator = GaussianMixture(n_components=self.n_cluster, covariance_type=self.cov_type)
-        # latent_labels = latent_estimator.fit_predict(self.normalized_history_data)
-        # self.history_data = pd.concat(self.history_data, latent_labels)
+        latent_labels = latent_estimator.fit_predict(self.normalized_history_data)
+        latent_labels = pd.DataFrame(latent_labels, columns=['latent'])
+        self.history_data = pd.concat([self.history_data, latent_labels], axis=1)
         self.history_data.to_csv('concantenated_music_history.csv', index=False)
 
     def _calculate_recommendation_score(self):
