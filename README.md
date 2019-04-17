@@ -32,6 +32,9 @@ Args:
 - Pandas
 - Django Pandas
 - Djongo (for MongoDB)
+- NumPy
+- SciPy
+- Scikit-Learn
 
 #### Software Dependencies
 - MongoDB (`sudo apt-get install -y mongodb-org`)
