@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import pandas as pd
 
 from django_pandas.io import read_frame
@@ -15,7 +16,7 @@ class MusicRecommendationCalculator():
         self.history_data = []
         self.normalized_history_data = []
         self.music_data = []
-        self.n_cluster=15
+        self.n_latent_cluster = int(os.environ.get('N_LATENT_CLUSTER'))
         self.cov_type='full'
 
     def _normalize_history_data_context(self):
@@ -61,13 +62,62 @@ class MusicRecommendationCalculator():
         
     def _do_latent_clustering(self):
         print('Start clustering')
-        latent_estimator = GaussianMixture(n_components=self.n_cluster, covariance_type=self.cov_type)
+        latent_estimator = GaussianMixture(n_components=self.n_latent_cluster, covariance_type=self.cov_type)
         latent_labels = latent_estimator.fit_predict(self.normalized_history_data)
         latent_labels = pd.DataFrame(latent_labels, columns=['latent'])
         self.history_data = pd.concat([self.history_data, latent_labels], axis=1)
         self.history_data.to_csv('concantenated_music_history.csv', index=False)
+    
+    def _get_p_latent(self):
+        p_z = np.array(self.history_data.groupby('latent').size().reset_index(name='count')['count'])
+        return p_z
+    
+    def _fill_missing_latent_zu(self, p_zu):
+        for latent_idx in range(self.n_latent_cluster):
+            if latent_idx not in p_zu['latent']:
+                p_zu.append({'latent': latent_idx, 'count': 0})
+        
+        p_zu = p_zu.sort_values('latent', ascending=True)
+        return p_zu
+
+    def _get_p_latent_given_user(self):
+        # get all users and its latent history count | yields dataframe
+        p_zu = self.history_data.groupby(['user', 'latent']).size().reset_index(name='count')
+
+        # get user-specific latent history indices count | yields index of corresponding row
+        p_zu_index = p_zu.index[p_zu['user'==self.user]]
+
+        # get the user-specific latent history count | yields latent and its count
+        p_zu = p_zu.loc[p_zu_index][['latent', 'count']]
+
+        # fill missing latent
+        p_zu = self._fill_missing_latent_zu(p_zu)
+
+        p_zu = np.array(p_zu['count'])
+
+        return p_zu
+
+    def _get_p_music_given_latent(self):
+        pass
+
+    def _get_p_location_given_latent(self):
+        pass
+
+    def _get_p_weather_given_latent(self):
+        pass
+
+    def _get_p_word_given_latent(self):
+        pass
 
     def _calculate_recommendation_score(self):
+        p_z = self._get_p_latent
+        p_zu = self._get_p_latent_given_user
+        print('this is p_z')
+        print(p_z)
+        print(type(p_z))
+        print('this is p_zu')
+        print(p_zu)
+        print(type(p_zu))
         pass
 
     def get_top_thirty_recommendation(self, history_data, music_data):
