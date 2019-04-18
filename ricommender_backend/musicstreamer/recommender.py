@@ -72,26 +72,26 @@ class MusicRecommendationCalculator():
         p_z = np.array(self.history_data.groupby('latent').size().reset_index(name='count')['count'])
         return p_z
     
-    def _fill_missing_latent_zu(self, p_zu):
+    def _fill_missing_latent(self, p_array):
         for latent_idx in range(self.n_latent_cluster):
-            if latent_idx not in p_zu['latent']:
-                p_zu.append({'latent': latent_idx, 'count': 0})
+            if latent_idx not in p_array['latent']:
+                p_array.append({'latent': latent_idx, 'count': 0})
         
-        p_zu = p_zu.sort_values('latent', ascending=True)
-        return p_zu
+        p_array = p_array.sort_values('latent', ascending=True)
+        return p_array
 
     def _get_p_latent_given_user(self):
         # get all users and its latent history count | yields dataframe
         p_zu = self.history_data.groupby(['user', 'latent']).size().reset_index(name='count')
 
         # get user-specific latent history indices count | yields index of corresponding row
-        p_zu_index = p_zu.index[p_zu['user'==self.user]]
+        p_zu_index = p_zu.index[p_zu['user']==self.user]
 
         # get the user-specific latent history count | yields latent and its count
         p_zu = p_zu.loc[p_zu_index][['latent', 'count']]
 
         # fill missing latent
-        p_zu = self._fill_missing_latent_zu(p_zu)
+        p_zu = self._fill_missing_latent(p_zu)
 
         p_zu = np.array(p_zu['count'])
 
@@ -101,7 +101,18 @@ class MusicRecommendationCalculator():
         pass
 
     def _get_p_location_given_latent(self):
-        pass
+        # get all location and its latent history count |
+        p_lz = self.history_data.groupby(['location', 'latent']).size().reset_index(name='count')
+
+        p_lz_index = p_lz.index[p_lz['location']==self.location]
+
+        p_lz = p_lz.loc[p_lz_index][['latent', 'count']]
+
+        p_lz = self._fill_missing_latent(p_lz)
+
+        p_lz = np.array(p_lz['count'])
+
+        return p_lz
 
     def _get_p_weather_given_latent(self):
         pass
