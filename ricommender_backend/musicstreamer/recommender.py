@@ -84,13 +84,12 @@ class MusicRecommendationCalculator():
         # get all users and its latent history count | yields dataframe
         p_zu = self.history_data.groupby(['user', 'latent']).size().reset_index(name='count')
 
-        # get user-specific latent history indices count | yields index of corresponding row
+        # get user-specific latent history indices count | yields indices of corresponding row
         p_zu_index = p_zu.index[p_zu['user']==self.user]
 
         # get the user-specific latent history count | yields latent and its count
         p_zu = p_zu.loc[p_zu_index][['latent', 'count']]
 
-        # fill missing latent
         p_zu = self._fill_missing_latent(p_zu)
 
         p_zu = np.array(p_zu['count'])
@@ -101,11 +100,13 @@ class MusicRecommendationCalculator():
         pass
 
     def _get_p_location_given_latent(self):
-        # get all location and its latent history count |
+        # get all location and its latent history count | yields dataframe
         p_lz = self.history_data.groupby(['location', 'latent']).size().reset_index(name='count')
 
+        # get the corresponding location | yields indices of corresponding location
         p_lz_index = p_lz.index[p_lz['location']==self.location]
 
+        # get the count after grouping it by latent vars | yields latent and count in location dataframe
         p_lz = p_lz.loc[p_lz_index][['latent', 'count']]
 
         p_lz = self._fill_missing_latent(p_lz)
@@ -115,7 +116,20 @@ class MusicRecommendationCalculator():
         return p_lz
 
     def _get_p_weather_given_latent(self):
-        pass
+        # get all weather and its latent history count | yields dataframe
+        p_wtz = self.history_data.groupby(['weather', 'latent']).size().reset_index(name='count')
+
+        # get the corresponding weather data | yields indices of corresponding weather
+        p_wtz_index = p_wtz.index[p_wtz['weather']==self.weather]
+
+        # get the count after grouping it by latent vars | yields latent and count in weather dataframe
+        p_wtz = p_wtz.loc[p_wtz_index][['latent', 'count']]
+
+        p_wtz = self._fill_missing_latent(p_wtz)
+
+        p_wtz = np.array(p_wtz['count'])
+
+        return p_wtz
 
     def _get_p_word_given_latent(self):
         pass
@@ -123,12 +137,20 @@ class MusicRecommendationCalculator():
     def _calculate_recommendation_score(self):
         p_z = self._get_p_latent
         p_zu = self._get_p_latent_given_user
+        p_lz = self._get_p_location_given_latent
+        p_wtz = self._get_p_weather_given_latent
         print('this is p_z')
         print(p_z)
         print(type(p_z))
         print('this is p_zu')
         print(p_zu)
         print(type(p_zu))
+        print('this is p_lz')
+        print(p_lz)
+        print(type(p_lz))
+        print('this is p_wtz')
+        print(p_wtz)
+        print(type(p_wtz))
         pass
 
     def get_top_thirty_recommendation(self, history_data, music_data):
