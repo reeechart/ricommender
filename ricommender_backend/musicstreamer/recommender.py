@@ -81,17 +81,20 @@ class MusicRecommendationCalculator():
     
     def _get_p_latent(self):
         p_z = np.array(self.history_data.groupby('latent').size().reset_index(name='count')['count'])
-
         p_z = self._convert_to_probability(p_z)
 
         return p_z
     
-    def _fill_missing_latent(self, p_array):
+    def _fill_missing_latent(self, p_array, type):
         p_full_latent = p_array
         latent_list = p_full_latent['latent'].tolist()
+            
         for latent_idx in range(self.n_latent_cluster):
             if latent_idx not in latent_list:
-                p_full_latent = p_full_latent.append({'latent': latent_idx, 'count': 0}, ignore_index=True)
+                if (type=='p_zu' or type=='p_lz' or type=='p_wtz'):
+                    p_full_latent = p_full_latent.append({'latent': latent_idx, 'count': 0}, ignore_index=True)
+                elif (type=='p_wz'):
+                    p_full_latent = p_full_latent.append({'latent': latent_idx, 'music__frame_0': 0, 'music__frame_1': 0, 'music__frame_2': 0, 'music__frame_3': 0, 'music__frame_4': 0, 'music__frame_5': 0, 'music__frame_6': 0})
         
         p_full_latent = p_full_latent.sort_values('latent', ascending=True)
         print('p_full')
@@ -108,7 +111,7 @@ class MusicRecommendationCalculator():
         # get the user-specific latent history count | yields latent and its count
         p_zu = p_zu.loc[p_zu_index][['latent', 'count']]
 
-        p_zu = self._fill_missing_latent(p_zu)
+        p_zu = self._fill_missing_latent(p_zu, type='p_zu')
 
         p_zu = np.array(p_zu['count'])
         p_zu = self._convert_to_probability(p_zu)
@@ -116,6 +119,7 @@ class MusicRecommendationCalculator():
         return p_zu
 
     def _get_p_music_given_latent(self):
+        p_sz = self.history_data.groupby(['music__id', 'latent']).size().reset_index(name='count')
         pass
 
     def _get_p_location_given_latent(self):
@@ -128,7 +132,7 @@ class MusicRecommendationCalculator():
         # get the count after grouping it by latent vars | yields latent and count in location dataframe
         p_lz = p_lz.loc[p_lz_index][['latent', 'count']]
 
-        p_lz = self._fill_missing_latent(p_lz)
+        p_lz = self._fill_missing_latent(p_lz, type='p_lz')
         p_lz = np.array(p_lz['count'])
         print('p_lz')
         print(p_lz)
@@ -151,7 +155,7 @@ class MusicRecommendationCalculator():
         # get the count after grouping it by latent vars | yields latent and count in weather dataframe
         p_wtz = p_wtz.loc[p_wtz_index][['latent', 'count']]
 
-        p_wtz = self._fill_missing_latent(p_wtz)
+        p_wtz = self._fill_missing_latent(p_wtz, type='p_wtz')
         p_wtz = np.array(p_wtz['count'])
         print('p_wtz')
         print(p_wtz)
@@ -165,13 +169,26 @@ class MusicRecommendationCalculator():
         return p_wtz
 
     def _get_p_word_given_latent(self):
-        pass
+        # get all audio words and its latent history sum | yields dataframe
+        p_wz = self.history_data.groupby(['latent'], as_index=False).agg({'music__num_frames':'sum', 'music__frame_0':'sum', 'music__frame_1':'sum', 'music__frame_2':'sum', 'music__frame_3':'sum', 'music__frame_4':'sum', 'music__frame_5':'sum', 'music__frame_6':'sum'})
+
+        # divide all occurences of frame with total frame
+        latent = p_wz['latent'].to_frame()
+        p_wz = p_wz[['music__frame_0', 'music__frame_1', 'music__frame_2', 'music__frame_3', 'music__frame_4', 'music__frame_5', 'music__frame_6']].div(p_wz['music__num_frames'], axis=0)
+        p_wz = pd.concat([latent, p_wz], axis=1)
+
+        p_wz = self._fill_missing_latent(p_wz, type='p_wz')
+        p_wz = p_wz.drop('latent', axis=1)
+        p_wz = np.array(p_wz.T)
+
+        return p_wz
 
     def _calculate_recommendation_score(self):
         p_z = self._get_p_latent()
         p_zu = self._get_p_latent_given_user()
         p_lz = self._get_p_location_given_latent()
         p_wtz = self._get_p_weather_given_latent()
+        p_wz = self._get_p_word_given_latent()
         print('this is p_z')
         print(p_z)
         print(type(p_z))
@@ -184,6 +201,9 @@ class MusicRecommendationCalculator():
         print('this is p_wtz')
         print(p_wtz)
         print(type(p_wtz))
+        print('this is p_wz')
+        print(p_wz)
+        print(type(p_wz))
         pass
 
     def get_top_thirty_recommendation(self, history_data, music_data):
