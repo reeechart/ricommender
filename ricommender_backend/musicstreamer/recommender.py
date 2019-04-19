@@ -70,15 +70,20 @@ class MusicRecommendationCalculator():
     
     def _get_p_latent(self):
         p_z = np.array(self.history_data.groupby('latent').size().reset_index(name='count')['count'])
+
         return p_z
     
     def _fill_missing_latent(self, p_array):
+        p_full_latent = p_array
+        latent_list = p_full_latent['latent'].tolist()
         for latent_idx in range(self.n_latent_cluster):
-            if latent_idx not in p_array['latent']:
-                p_array.append({'latent': latent_idx, 'count': 0})
+            if latent_idx not in latent_list:
+                p_full_latent = p_full_latent.append({'latent': latent_idx, 'count': 0}, ignore_index=True)
         
-        p_array = p_array.sort_values('latent', ascending=True)
-        return p_array
+        p_full_latent = p_full_latent.sort_values('latent', ascending=True)
+        print('p_full')
+        print(p_full_latent)
+        return p_full_latent
 
     def _get_p_latent_given_user(self):
         # get all users and its latent history count | yields dataframe
@@ -135,10 +140,10 @@ class MusicRecommendationCalculator():
         pass
 
     def _calculate_recommendation_score(self):
-        p_z = self._get_p_latent
-        p_zu = self._get_p_latent_given_user
-        p_lz = self._get_p_location_given_latent
-        p_wtz = self._get_p_weather_given_latent
+        p_z = self._get_p_latent()
+        p_zu = self._get_p_latent_given_user()
+        p_lz = self._get_p_location_given_latent()
+        p_wtz = self._get_p_weather_given_latent()
         print('this is p_z')
         print(p_z)
         print(type(p_z))
