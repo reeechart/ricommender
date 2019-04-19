@@ -67,9 +67,22 @@ class MusicRecommendationCalculator():
         latent_labels = pd.DataFrame(latent_labels, columns=['latent'])
         self.history_data = pd.concat([self.history_data, latent_labels], axis=1)
         self.history_data.to_csv('concantenated_music_history.csv', index=False)
+
+    def _convert_to_probability(self, p_array):
+        sum = np.sum(p_array)
+        p_array = np.true_divide(p_array, sum)
+
+        return p_array
+
+    def _get_count_latent(self):
+        count_z = np.array(self.history_data.groupby('latent').size().reset_index(name='count')['count'])
+
+        return count_z
     
     def _get_p_latent(self):
         p_z = np.array(self.history_data.groupby('latent').size().reset_index(name='count')['count'])
+
+        p_z = self._convert_to_probability(p_z)
 
         return p_z
     
@@ -98,6 +111,7 @@ class MusicRecommendationCalculator():
         p_zu = self._fill_missing_latent(p_zu)
 
         p_zu = np.array(p_zu['count'])
+        p_zu = self._convert_to_probability(p_zu)
 
         return p_zu
 
@@ -115,8 +129,15 @@ class MusicRecommendationCalculator():
         p_lz = p_lz.loc[p_lz_index][['latent', 'count']]
 
         p_lz = self._fill_missing_latent(p_lz)
-
         p_lz = np.array(p_lz['count'])
+        print('p_lz')
+        print(p_lz)
+
+        p_z = self._get_count_latent()
+        print('p_z')
+        print(p_z)
+
+        p_lz = np.divide(p_lz, p_z)
 
         return p_lz
 
@@ -131,8 +152,15 @@ class MusicRecommendationCalculator():
         p_wtz = p_wtz.loc[p_wtz_index][['latent', 'count']]
 
         p_wtz = self._fill_missing_latent(p_wtz)
-
         p_wtz = np.array(p_wtz['count'])
+        print('p_wtz')
+        print(p_wtz)
+
+        p_z = self._get_count_latent()
+        print('p_z')
+        print(p_z)
+
+        p_wtz = np.divide(p_wtz, p_z)
 
         return p_wtz
 
