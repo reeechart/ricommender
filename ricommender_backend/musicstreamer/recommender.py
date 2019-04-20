@@ -101,6 +101,21 @@ class MusicRecommendationCalculator():
         print(p_full_latent)
         return p_full_latent
 
+    def _fill_music_missing_latent(self, p_sz):
+        p_full_latent = p_sz
+        music_ids = p_sz['music__id'].unique().tolist()
+
+        for music_id in music_ids:
+            p_single_sz = p_sz.loc[p_sz['music__id']==music_id]
+            music_latent_list = p_single_sz['latent'].tolist()
+            for latent_idx in range(self.n_latent_cluster):
+                if latent_idx not in music_latent_list:
+                    p_full_latent = p_full_latent.append({'music__id': music_id, 'latent': latent_idx, 'count': 0})
+
+        p_full_latent = p_full_latent.sort_values(['music__id', 'latent'], ascending=[True, True])
+
+        return p_full_latent
+
     def _get_p_latent_given_user(self):
         # get all users and its latent history count | yields dataframe
         p_zu = self.history_data.groupby(['user', 'latent']).size().reset_index(name='count')
@@ -119,8 +134,12 @@ class MusicRecommendationCalculator():
         return p_zu
 
     def _get_p_music_given_latent(self):
-        p_sz = self.history_data.groupby(['music__id', 'latent']).size().reset_index(name='count')
-        pass
+        p_sz = self.history_data.groupby(['music__id', 'latent']).size().reset_index(name='count').sort_values('music__id', ascending=True)
+
+        p_sz = self._fill_music_missing_latent(p_sz)
+        
+        #SPLIT MUSIC ID, TRANSPOSE LATENT+COUNT, UNIQUE(MUSIC_ID) MERGE WITH LATENT+COUNT
+        return p_sz
 
     def _get_p_location_given_latent(self):
         # get all location and its latent history count | yields dataframe
@@ -189,6 +208,7 @@ class MusicRecommendationCalculator():
         p_lz = self._get_p_location_given_latent()
         p_wtz = self._get_p_weather_given_latent()
         p_wz = self._get_p_word_given_latent()
+        p_sz = self._get_p_music_given_latent()
         print('this is p_z')
         print(p_z)
         print(type(p_z))
@@ -204,6 +224,9 @@ class MusicRecommendationCalculator():
         print('this is p_wz')
         print(p_wz)
         print(type(p_wz))
+        print('this is p_sz')
+        print(p_sz)
+        print(type(p_sz))
         pass
 
     def get_top_thirty_recommendation(self, history_data, music_data):
