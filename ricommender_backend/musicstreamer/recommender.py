@@ -58,7 +58,7 @@ class MusicRecommendationCalculator():
         self._normalize_history_data_username()
         self._normalize_history_data_music()
         self._drop_string_nominal_attributes()
-        self.normalized_history_data.to_csv('normalized_history_data.csv', index=False)
+        # self.normalized_history_data.to_csv('normalized_history_data.csv', index=False)
         
     def _do_latent_clustering(self):
         print('Start clustering')
@@ -66,7 +66,7 @@ class MusicRecommendationCalculator():
         latent_labels = latent_estimator.fit_predict(self.normalized_history_data)
         latent_labels = pd.DataFrame(latent_labels, columns=['latent'])
         self.history_data = pd.concat([self.history_data, latent_labels], axis=1)
-        self.history_data.to_csv('concantenated_music_history.csv', index=False)
+        # self.history_data.to_csv('concantenated_music_history.csv', index=False)
 
     def _convert_to_probability(self, p_array):
         sum = np.sum(p_array)
@@ -147,14 +147,17 @@ class MusicRecommendationCalculator():
         p_sz = self.history_data.groupby(['music__id', 'latent']).size().reset_index(name='count').sort_values('music__id', ascending=True)
 
         p_sz = self._fill_music_missing_latent(p_sz)
-
-        p_sz.to_csv('p_sz.csv')
+        # p_sz.to_csv('p_sz.csv')
 
         p_sz = self._convert_p_sz_to_latent_matrix(p_sz)
+        # np.savetxt('count_sz.out', p_sz, fmt='%i')
+        
+        count_z = self._get_count_latent()
+        # np.savetxt('count_z.out', count_z, fmt='%i')
 
-        np.savetxt('p_sz.out', p_sz, fmt='%i')
+        p_sz = np.divide(p_sz, count_z)
+        # np.savetxt('p_sz.out', p_sz, fmt='%f')
 
-        # DIVIDE WITH _GET_COUNT_Z
         return p_sz
 
     def _get_p_location_given_latent(self):
