@@ -94,7 +94,7 @@ class MusicRecommendationCalculator():
                 if (type=='p_zu' or type=='p_lz' or type=='p_wtz'):
                     p_full_latent = p_full_latent.append({'latent': latent_idx, 'count': 0}, ignore_index=True)
                 elif (type=='p_wz'):
-                    p_full_latent = p_full_latent.append({'latent': latent_idx, 'music__frame_0': 0, 'music__frame_1': 0, 'music__frame_2': 0, 'music__frame_3': 0, 'music__frame_4': 0, 'music__frame_5': 0, 'music__frame_6': 0})
+                    p_full_latent = p_full_latent.append({'latent': latent_idx, 'music__frame_0': 0, 'music__frame_1': 0, 'music__frame_2': 0, 'music__frame_3': 0, 'music__frame_4': 0, 'music__frame_5': 0, 'music__frame_6': 0}, ignore_index=True)
         
         p_full_latent = p_full_latent.sort_values('latent', ascending=True)
         print('p_full')
@@ -102,7 +102,7 @@ class MusicRecommendationCalculator():
         return p_full_latent
 
     def _fill_music_missing_latent(self, p_sz):
-        p_full_latent = p_sz
+        p_music_full_latent = p_sz
         music_ids = p_sz['music__id'].unique().tolist()
 
         for music_id in music_ids:
@@ -110,11 +110,21 @@ class MusicRecommendationCalculator():
             music_latent_list = p_single_sz['latent'].tolist()
             for latent_idx in range(self.n_latent_cluster):
                 if latent_idx not in music_latent_list:
-                    p_full_latent = p_full_latent.append({'music__id': music_id, 'latent': latent_idx, 'count': 0})
+                    p_music_full_latent = p_music_full_latent.append({'music__id': music_id, 'latent': latent_idx, 'count': 0}, ignore_index=True)
 
-        p_full_latent = p_full_latent.sort_values(['music__id', 'latent'], ascending=[True, True])
+        p_music_full_latent = p_music_full_latent.sort_values(['music__id', 'latent'], ascending=[True, True])
 
-        return p_full_latent
+        return p_music_full_latent
+
+    '''
+        converts p_sz to matrix with row index as music_id and col index as latent id
+        assumes that the p_sz is sorted ascendingly by music__id and latent
+    '''
+    def _convert_p_sz_to_latent_matrix(self, p_sz):
+        p_sz = p_sz.groupby('music__id')['count'].apply(list).reset_index(name='count')
+        p_sz = np.array(list(p_sz['count']))
+
+        return p_sz
 
     def _get_p_latent_given_user(self):
         # get all users and its latent history count | yields dataframe
@@ -137,8 +147,14 @@ class MusicRecommendationCalculator():
         p_sz = self.history_data.groupby(['music__id', 'latent']).size().reset_index(name='count').sort_values('music__id', ascending=True)
 
         p_sz = self._fill_music_missing_latent(p_sz)
-        
-        #SPLIT MUSIC ID, TRANSPOSE LATENT+COUNT, UNIQUE(MUSIC_ID) MERGE WITH LATENT+COUNT
+
+        p_sz.to_csv('p_sz.csv')
+
+        p_sz = self._convert_p_sz_to_latent_matrix(p_sz)
+
+        np.savetxt('p_sz.out', p_sz, fmt='%i')
+
+        # DIVIDE WITH _GET_COUNT_Z
         return p_sz
 
     def _get_p_location_given_latent(self):
