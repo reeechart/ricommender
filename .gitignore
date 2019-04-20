@@ -5,6 +5,9 @@ musics_test/
 # CSV files used for the experiment
 *.csv
 
+# Temporary out file
+*.out
+
 # Django
 ## Environment variables
 .env
