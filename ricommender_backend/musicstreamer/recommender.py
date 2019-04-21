@@ -61,7 +61,7 @@ class MusicRecommendationCalculator():
         # self.normalized_history_data.to_csv('normalized_history_data.csv', index=False)
         
     def _do_latent_clustering(self):
-        print('Start clustering')
+        print('Clustering latent variable...')
         latent_estimator = GaussianMixture(n_components=self.n_latent_cluster, covariance_type=self.cov_type)
         latent_labels = latent_estimator.fit_predict(self.normalized_history_data)
         latent_labels = pd.DataFrame(latent_labels, columns=['latent'])
@@ -212,7 +212,11 @@ class MusicRecommendationCalculator():
 
         return p_wz
 
+    def _combine_music_recommendation_score(self, music_score):
+        self.music_data['score'] = music_score
+
     def _calculate_recommendation_score(self):
+        print('Calculating recommendation...')
         p_z = self._get_p_latent()
         p_zu = self._get_p_latent_given_user()
         p_lz = self._get_p_location_given_latent()
@@ -231,7 +235,11 @@ class MusicRecommendationCalculator():
         p_uslwtw = np.multiply(p_uslwtw, p_lz)
         p_uslwtw = np.multiply(p_uslwtw, p_wtz)
         p_uslwtw = np.matmul(p_uslwtw, p_wz)
-        p_uslwtw = np.sum(p_uslwtw, axis=1)
+        p_uslwt = np.sum(p_uslwtw, axis=1)
+
+        p_s_given_ulwt = self._convert_to_probability(p_uslwt)
+
+        self._combine_music_recommendation_score(p_s_given_ulwt)
 
         # print('this is p_z')
         # print(p_z)
@@ -262,3 +270,4 @@ class MusicRecommendationCalculator():
         self._normalize_history_data()
         self._do_latent_clustering()
         self._calculate_recommendation_score()
+        self.music_data.to_csv('music_score.csv', index=False)
