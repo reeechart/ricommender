@@ -264,10 +264,14 @@ class MusicRecommendationCalculator():
         # print(p_uslwtw.shape)
         # np.savetxt('p_uslwtw.out', p_uslwtw, fmt='%.18e')
 
+    def _sort_music_based_on_score(self):
+        self.music_data = self.music_data.sort_values('score', ascending=False)
+
     def get_top_thirty_recommendation(self, history_data, music_data):
         self.history_data = read_frame(history_data)
         self.music_data = read_frame(music_data)
         self._normalize_history_data()
         self._do_latent_clustering()
         self._calculate_recommendation_score()
+        self._sort_music_based_on_score()
         self.music_data.to_csv('music_score.csv', index=False)
