@@ -97,8 +97,6 @@ class MusicRecommendationCalculator():
                     p_full_latent = p_full_latent.append({'latent': latent_idx, 'music__frame_0': 0, 'music__frame_1': 0, 'music__frame_2': 0, 'music__frame_3': 0, 'music__frame_4': 0, 'music__frame_5': 0, 'music__frame_6': 0}, ignore_index=True)
         
         p_full_latent = p_full_latent.sort_values('latent', ascending=True)
-        print('p_full')
-        print(p_full_latent)
         return p_full_latent
 
     def _fill_music_missing_latent(self, p_sz):
@@ -172,12 +170,8 @@ class MusicRecommendationCalculator():
 
         p_lz = self._fill_missing_latent(p_lz, type='p_lz')
         p_lz = np.array(p_lz['count'])
-        print('p_lz')
-        print(p_lz)
 
         p_z = self._get_count_latent()
-        print('p_z')
-        print(p_z)
 
         p_lz = np.divide(p_lz, p_z)
 
@@ -195,12 +189,8 @@ class MusicRecommendationCalculator():
 
         p_wtz = self._fill_missing_latent(p_wtz, type='p_wtz')
         p_wtz = np.array(p_wtz['count'])
-        print('p_wtz')
-        print(p_wtz)
 
         p_z = self._get_count_latent()
-        print('p_z')
-        print(p_z)
 
         p_wtz = np.divide(p_wtz, p_z)
 
@@ -217,7 +207,8 @@ class MusicRecommendationCalculator():
 
         p_wz = self._fill_missing_latent(p_wz, type='p_wz')
         p_wz = p_wz.drop('latent', axis=1)
-        p_wz = np.array(p_wz.T)
+        p_wz = np.array(p_wz)
+        # np.savetxt('p_wz.out', p_wz)
 
         return p_wz
 
@@ -228,25 +219,42 @@ class MusicRecommendationCalculator():
         p_wtz = self._get_p_weather_given_latent()
         p_wz = self._get_p_word_given_latent()
         p_sz = self._get_p_music_given_latent()
-        print('this is p_z')
-        print(p_z)
-        print(type(p_z))
-        print('this is p_zu')
-        print(p_zu)
-        print(type(p_zu))
-        print('this is p_lz')
-        print(p_lz)
-        print(type(p_lz))
-        print('this is p_wtz')
-        print(p_wtz)
-        print(type(p_wtz))
-        print('this is p_wz')
-        print(p_wz)
-        print(type(p_wz))
-        print('this is p_sz')
-        print(p_sz)
-        print(type(p_sz))
-        pass
+
+        np.savetxt('p_sz.out', p_sz, fmt='%f')
+        np.savetxt('p_z.out', p_z, fmt='%f')
+        np.savetxt('p_zu.out', p_zu, fmt='%f')
+        np.savetxt('p_lz.out', p_lz, fmt='%f')
+        np.savetxt('p_wtz.out', p_wtz, fmt='%f')
+
+        p_uslwtw = np.multiply(p_sz, p_z)
+        p_uslwtw = np.multiply(p_uslwtw, p_zu)
+        p_uslwtw = np.multiply(p_uslwtw, p_lz)
+        p_uslwtw = np.multiply(p_uslwtw, p_wtz)
+        p_uslwtw = np.matmul(p_uslwtw, p_wz)
+        p_uslwtw = np.sum(p_uslwtw, axis=1)
+
+        # print('this is p_z')
+        # print(p_z)
+        # print(p_z.shape)
+        # print('this is p_zu')
+        # print(p_zu)
+        # print(p_zu.shape)
+        # print('this is p_lz')
+        # print(p_lz)
+        # print(p_lz.shape)
+        # print('this is p_wtz')
+        # print(p_wtz)
+        # print(p_wtz.shape)
+        # print('this is p_wz')
+        # print(p_wz)
+        # print(p_wz.shape)
+        # print('this is p_sz')
+        # print(p_sz)
+        # print(p_sz.shape)
+        # print('this is p_uslwtw')
+        # print(p_uslwtw)
+        # print(p_uslwtw.shape)
+        # np.savetxt('p_uslwtw.out', p_uslwtw, fmt='%.18e')
 
     def get_top_thirty_recommendation(self, history_data, music_data):
         self.history_data = read_frame(history_data)
