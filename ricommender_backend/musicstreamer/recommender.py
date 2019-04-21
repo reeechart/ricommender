@@ -282,4 +282,4 @@ class MusicRecommendationCalculator():
         self._calculate_recommendation_score()
         self._sort_music_based_on_score()
         self._add_music_rank_to_music_data()
-        self.music_data.to_csv('music_score.csv', index=False)
+        return self.music_data.to_json(orient='records')

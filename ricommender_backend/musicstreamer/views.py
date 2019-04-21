@@ -59,9 +59,8 @@ class MusicRecommender(View):
             all_history = all_history.values('user', 'location', 'weather', 'music__id', 'music__num_frames', 'music__frame_0', 'music__frame_1', 'music__frame_2', 'music__frame_3', 'music__frame_4', 'music__frame_5', 'music__frame_6')
             all_music = Music.objects.values('id', 'file', 'title', 'artist', 'album')
             music_recommendation_calculator = MusicRecommendationCalculator(username, location, weather)
-            music_recommendation_calculator.get_top_thirty_recommendation(all_history, all_music)
-            response_body = "{} {} {}"
-            return HttpResponse(response_body.format(request.GET["user"], request.GET["loc"], request.GET["weather"]))
+            recommendations = music_recommendation_calculator.get_top_thirty_recommendation(all_history, all_music)
+            return HttpResponse(recommendations)
         else:
             return HttpResponseNotAllowed("Method Not Allowed")
 
