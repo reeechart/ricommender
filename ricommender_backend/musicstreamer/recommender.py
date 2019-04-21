@@ -274,7 +274,7 @@ class MusicRecommendationCalculator():
         
         self.music_data['music_rank'] = music_rank
 
-    def get_top_thirty_recommendation(self, history_data, music_data):
+    def get_top_fifty_recommendation(self, history_data, music_data):
         self.history_data = read_frame(history_data)
         self.music_data = read_frame(music_data)
         self._normalize_history_data()
@@ -282,4 +282,5 @@ class MusicRecommendationCalculator():
         self._calculate_recommendation_score()
         self._sort_music_based_on_score()
         self._add_music_rank_to_music_data()
-        return self.music_data.to_json(orient='records')
+        top_fifty_recommendation = self.music_data.head(50)
+        return top_fifty_recommendation.to_json(orient='records')
