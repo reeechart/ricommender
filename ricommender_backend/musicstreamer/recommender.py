@@ -282,5 +282,5 @@ class MusicRecommendationCalculator():
         self._calculate_recommendation_score()
         self._sort_music_based_on_score()
         self._add_music_rank_to_music_data()
-        top_fifty_recommendation = self.music_data.head(int(n))
-        return top_fifty_recommendation.to_json(orient='records')
+        top_n_recommendation = self.music_data.head(int(n))
+        return top_n_recommendation.to_json(orient='records')
