@@ -58,7 +58,7 @@ class MusicRecommendationCalculator():
         self._normalize_history_data_username()
         self._normalize_history_data_music()
         self._drop_string_nominal_attributes()
-        # self.normalized_history_data.to_csv('normalized_history_data.csv', index=False)
+        self.normalized_history_data.to_csv('normalized_history_data.csv', index=False)
         
     def _do_latent_clustering(self):
         print('Clustering latent variable...')
@@ -66,7 +66,7 @@ class MusicRecommendationCalculator():
         latent_labels = latent_estimator.fit_predict(self.normalized_history_data)
         latent_labels = pd.DataFrame(latent_labels, columns=['latent'])
         self.history_data = pd.concat([self.history_data, latent_labels], axis=1)
-        # self.history_data.to_csv('concantenated_music_history.csv', index=False)
+        self.history_data.to_csv('concatenated_music_history.csv', index=False)
 
     def _convert_to_probability(self, p_array):
         sum = np.sum(p_array)
@@ -123,6 +123,13 @@ class MusicRecommendationCalculator():
         p_sz = np.array(list(p_sz['count']))
 
         return p_sz
+
+    def _get_p_user(self):
+        n_u = len(self.history_data.loc[self.history_data['user']==self.user])
+        n_all = len(self.history_data)
+        p_u = n_u/n_all
+
+        return p_u
 
     def _get_p_latent_given_user(self):
         # get all users and its latent history count | yields dataframe
@@ -217,7 +224,7 @@ class MusicRecommendationCalculator():
 
     def _calculate_recommendation_score(self):
         print('Calculating recommendation...')
-        p_z = self._get_p_latent()
+        p_u = self._get_p_user()
         p_zu = self._get_p_latent_given_user()
         p_lz = self._get_p_location_given_latent()
         p_wtz = self._get_p_weather_given_latent()
@@ -225,12 +232,12 @@ class MusicRecommendationCalculator():
         p_sz = self._get_p_music_given_latent()
 
         np.savetxt('p_sz.out', p_sz, fmt='%f')
-        np.savetxt('p_z.out', p_z, fmt='%f')
+        print('p_u ', p_u)
         np.savetxt('p_zu.out', p_zu, fmt='%f')
         np.savetxt('p_lz.out', p_lz, fmt='%f')
         np.savetxt('p_wtz.out', p_wtz, fmt='%f')
 
-        p_uslwtw = np.multiply(p_sz, p_z)
+        p_uslwtw = np.multiply(p_sz, p_u)
         p_uslwtw = np.multiply(p_uslwtw, p_zu)
         p_uslwtw = np.multiply(p_uslwtw, p_lz)
         p_uslwtw = np.multiply(p_uslwtw, p_wtz)
