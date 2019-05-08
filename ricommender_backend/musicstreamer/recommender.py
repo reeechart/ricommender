@@ -17,7 +17,7 @@ class MusicRecommendationCalculator():
         self.normalized_history_data = []
         self.music_data = []
         self.n_latent_cluster = int(os.environ.get('N_LATENT_CLUSTER'))
-        self.cov_type='full'
+        self.cov_type='tied'
 
     def _normalize_history_data_context(self):
         one_hot_encoded_location = pd.get_dummies(self.normalized_history_data['location'], prefix='location')
@@ -80,7 +80,10 @@ class MusicRecommendationCalculator():
         return count_z
     
     def _get_p_latent(self):
-        p_z = np.array(self.history_data.groupby('latent').size().reset_index(name='count')['count'])
+        p_z = self.history_data.groupby('latent').size().reset_index(name='count')
+
+        p_z = self._fill_missing_latent(p_z, type='p_z')
+        p_z = np.array(p_z['count'])
         p_z = self._convert_to_probability(p_z)
 
         return p_z
@@ -91,7 +94,7 @@ class MusicRecommendationCalculator():
             
         for latent_idx in range(self.n_latent_cluster):
             if latent_idx not in latent_list:
-                if (type=='p_zu' or type=='p_lz' or type=='p_wtz'):
+                if (type=='p_z' or type=='p_zu' or type=='p_lz' or type=='p_wtz'):
                     p_full_latent = p_full_latent.append({'latent': latent_idx, 'count': 0}, ignore_index=True)
                 elif (type=='p_wz'):
                     p_full_latent = p_full_latent.append({'latent': latent_idx, 'music__frame_0': 0, 'music__frame_1': 0, 'music__frame_2': 0, 'music__frame_3': 0, 'music__frame_4': 0, 'music__frame_5': 0, 'music__frame_6': 0}, ignore_index=True)
