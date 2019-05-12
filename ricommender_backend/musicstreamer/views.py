@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
+from rest_framework import filters
 from rest_framework import generics
 from rest_framework.views import APIView
 
@@ -23,6 +24,12 @@ from ricommender_backend.musicstreamer.serializers import MusicSerializer
 class MusicListView(generics.ListCreateAPIView):
     queryset = Music.objects.all()
     serializer_class = MusicSerializer
+
+class MusicSearchView(generics.ListAPIView):
+    queryset = Music.objects.all()
+    serializer_class = MusicSerializer
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('title', )
 
 class MusicMetadataView(generics.RetrieveAPIView):
     queryset = Music.objects.all()
