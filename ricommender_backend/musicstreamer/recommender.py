@@ -75,7 +75,10 @@ class MusicRecommendationCalculator():
         return p_array
 
     def _get_count_latent(self):
-        count_z = np.array(self.history_data.groupby('latent').size().reset_index(name='count')['count'])
+        count_z = self.history_data.groupby('latent').size().reset_index(name='count')
+
+        count_z = self._fill_missing_latent(count_z, type='p_z')
+        count_z = np.array(count_z['count'])
 
         return count_z
     
