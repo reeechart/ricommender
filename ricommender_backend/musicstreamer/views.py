@@ -17,6 +17,7 @@ from ricommender_backend.musicstreamer.models import Music
 from ricommender_backend.musicstreamer.recommender import MusicRecommendationCalculator
 from ricommender_backend.musicstreamer.serializers import HistoryCreateSerializer
 from ricommender_backend.musicstreamer.serializers import HistoryReadSerializer
+from ricommender_backend.musicstreamer.serializers import MusicSearchSerializer
 from ricommender_backend.musicstreamer.serializers import MusicSerializer
 
 # Create your views here.
@@ -27,7 +28,7 @@ class MusicListView(generics.ListCreateAPIView):
 
 class MusicSearchView(generics.ListAPIView):
     queryset = Music.objects.all()
-    serializer_class = MusicSerializer
+    serializer_class = MusicSearchSerializer
     filter_backends = (filters.SearchFilter, )
     search_fields = ('title', )
 

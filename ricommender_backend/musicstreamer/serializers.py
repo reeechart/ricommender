@@ -10,6 +10,12 @@ class MusicSerializer(serializers.ModelSerializer):
         model = Music
         fields = '__all__'
 
+class MusicSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Music
+        model.music_rank = -1
+        fields = ('id', 'title', 'artist', 'album', 'file', 'music_rank')
+
 class HistoryCreateSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(
         slug_field = 'username',
