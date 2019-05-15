@@ -18,6 +18,10 @@ class Music(models.Model):
     frame_4 = models.IntegerField(_('Frame 4'), default=0)
     frame_5 = models.IntegerField(_('Frame 5'), default=0)
     frame_6 = models.IntegerField(_('Frame 6'), default=0)
+    frame_7 = models.IntegerField(_('Frame 7'), default=0)
+    frame_8 = models.IntegerField(_('Frame 8'), default=0)
+    frame_9 = models.IntegerField(_('Frame 9'), default=0)
+    frame_10 = models.IntegerField(_('Frame 10'), default=0)
 
 class History(models.Model):
     OFFICE = 'office'

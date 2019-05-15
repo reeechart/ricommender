@@ -64,8 +64,8 @@ class MusicRecommender(View):
             location = request.GET['loc']
             weather = request.GET['weather']
             n = request.GET['n']
-            all_history = History.objects.select_related('music__id', 'music__num_frames', 'music__frame_0', 'music__frame_1', 'music__frame_2', 'music__frame_3', 'music__frame_4', 'music__frame_5', 'music__frame_6').all()
-            all_history = all_history.values('user', 'location', 'weather', 'music__id', 'music__num_frames', 'music__frame_0', 'music__frame_1', 'music__frame_2', 'music__frame_3', 'music__frame_4', 'music__frame_5', 'music__frame_6')
+            all_history = History.objects.select_related('music__id', 'music__num_frames', 'music__frame_0', 'music__frame_1', 'music__frame_2', 'music__frame_3', 'music__frame_4', 'music__frame_5', 'music__frame_6', 'music__frame_7', 'music__frame_8', 'music__frame_9', 'music__frame_10').all()
+            all_history = all_history.values('user', 'location', 'weather', 'music__id', 'music__num_frames', 'music__frame_0', 'music__frame_1', 'music__frame_2', 'music__frame_3', 'music__frame_4', 'music__frame_5', 'music__frame_6', 'music__frame_7', 'music__frame_8', 'music__frame_9', 'music__frame_10')
             all_music = Music.objects.values('id', 'file', 'title', 'artist', 'album')
             music_recommendation_calculator = MusicRecommendationCalculator(username, location, weather)
             recommendations = music_recommendation_calculator.get_top_n_recommendation(n, all_history, all_music)

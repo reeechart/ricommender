@@ -17,7 +17,7 @@ class MusicRecommendationCalculator():
         self.normalized_history_data = []
         self.music_data = []
         self.n_latent_cluster = int(os.environ.get('N_LATENT_CLUSTER'))
-        self.cov_type='tied'
+        self.cov_type='diag'
 
     def _normalize_history_data_context(self):
         one_hot_encoded_location = pd.get_dummies(self.normalized_history_data['location'], prefix='location')
@@ -41,8 +41,13 @@ class MusicRecommendationCalculator():
         music_frame_4_scaler = MinMaxScaler()
         music_frame_5_scaler = MinMaxScaler()
         music_frame_6_scaler = MinMaxScaler()
+        music_frame_7_scaler = MinMaxScaler()
+        music_frame_8_scaler = MinMaxScaler()
+        music_frame_9_scaler = MinMaxScaler()
+        music_frame_10_scaler = MinMaxScaler()
         one_hot_encoded_music_id = pd.get_dummies(self.normalized_history_data['music__id'], prefix='music__id')
         self.normalized_history_data = pd.concat([one_hot_encoded_music_id, self.normalized_history_data], axis=1)
+        # self.normalized_history_data = self.normalized_history_data.drop('music__num_frames', axis=1)
         self.normalized_history_data['music__num_frames'] = music_num_frames_scaler.fit_transform(self.normalized_history_data['music__num_frames'].values.reshape(-1, 1))
         self.normalized_history_data['music__frame_0'] = music_frame_0_scaler.fit_transform(self.normalized_history_data['music__frame_0'].values.reshape(-1, 1))
         self.normalized_history_data['music__frame_1'] = music_frame_1_scaler.fit_transform(self.normalized_history_data['music__frame_1'].values.reshape(-1, 1))
@@ -51,6 +56,10 @@ class MusicRecommendationCalculator():
         self.normalized_history_data['music__frame_4'] = music_frame_4_scaler.fit_transform(self.normalized_history_data['music__frame_4'].values.reshape(-1, 1))
         self.normalized_history_data['music__frame_5'] = music_frame_5_scaler.fit_transform(self.normalized_history_data['music__frame_5'].values.reshape(-1, 1))
         self.normalized_history_data['music__frame_6'] = music_frame_6_scaler.fit_transform(self.normalized_history_data['music__frame_6'].values.reshape(-1, 1))
+        self.normalized_history_data['music__frame_7'] = music_frame_7_scaler.fit_transform(self.normalized_history_data['music__frame_7'].values.reshape(-1, 1))
+        self.normalized_history_data['music__frame_8'] = music_frame_8_scaler.fit_transform(self.normalized_history_data['music__frame_8'].values.reshape(-1, 1))
+        self.normalized_history_data['music__frame_9'] = music_frame_9_scaler.fit_transform(self.normalized_history_data['music__frame_9'].values.reshape(-1, 1))
+        self.normalized_history_data['music__frame_10'] = music_frame_10_scaler.fit_transform(self.normalized_history_data['music__frame_10'].values.reshape(-1, 1))
 
     def _normalize_history_data(self):
         self.normalized_history_data = self.history_data
@@ -74,10 +83,13 @@ class MusicRecommendationCalculator():
 
         return p_array
 
+    '''
+    gets count value of each latent, with zero value safety changed to 1, as it will only be used for divider
+    '''
     def _get_count_latent(self):
         count_z = self.history_data.groupby('latent').size().reset_index(name='count')
 
-        count_z = self._fill_missing_latent(count_z, type='p_z')
+        count_z = self._fill_missing_latent(count_z, type='count_z')
         count_z = np.array(count_z['count'])
 
         return count_z
@@ -99,6 +111,8 @@ class MusicRecommendationCalculator():
             if latent_idx not in latent_list:
                 if (type=='p_z' or type=='p_zu' or type=='p_lz' or type=='p_wtz'):
                     p_full_latent = p_full_latent.append({'latent': latent_idx, 'count': 0}, ignore_index=True)
+                elif (type=='count_z'):
+                    p_full_latent = p_full_latent.append({'latent': latent_idx, 'count': 1}, ignore_index=True)
                 elif (type=='p_wz'):
                     p_full_latent = p_full_latent.append({'latent': latent_idx, 'music__frame_0': 0, 'music__frame_1': 0, 'music__frame_2': 0, 'music__frame_3': 0, 'music__frame_4': 0, 'music__frame_5': 0, 'music__frame_6': 0}, ignore_index=True)
         
@@ -211,11 +225,11 @@ class MusicRecommendationCalculator():
 
     def _get_p_word_given_latent(self):
         # get all audio words and its latent history sum | yields dataframe
-        p_wz = self.history_data.groupby(['latent'], as_index=False).agg({'music__num_frames':'sum', 'music__frame_0':'sum', 'music__frame_1':'sum', 'music__frame_2':'sum', 'music__frame_3':'sum', 'music__frame_4':'sum', 'music__frame_5':'sum', 'music__frame_6':'sum'})
+        p_wz = self.history_data.groupby(['latent'], as_index=False).agg({'music__num_frames':'sum', 'music__frame_0':'sum', 'music__frame_1':'sum', 'music__frame_2':'sum', 'music__frame_3':'sum', 'music__frame_4':'sum', 'music__frame_5':'sum', 'music__frame_6':'sum', 'music__frame_7':'sum', 'music__frame_8':'sum', 'music__frame_9':'sum', 'music__frame_10':'sum'})
 
         # divide all occurences of frame with total frame
         latent = p_wz['latent'].to_frame()
-        p_wz = p_wz[['music__frame_0', 'music__frame_1', 'music__frame_2', 'music__frame_3', 'music__frame_4', 'music__frame_5', 'music__frame_6']].div(p_wz['music__num_frames'], axis=0)
+        p_wz = p_wz[['music__frame_0', 'music__frame_1', 'music__frame_2', 'music__frame_3', 'music__frame_4', 'music__frame_5', 'music__frame_6', 'music__frame_7', 'music__frame_8', 'music__frame_9', 'music__frame_10']].div(p_wz['music__num_frames'], axis=0)
         p_wz = pd.concat([latent, p_wz], axis=1)
 
         p_wz = self._fill_missing_latent(p_wz, type='p_wz')
@@ -238,7 +252,6 @@ class MusicRecommendationCalculator():
         p_sz = self._get_p_music_given_latent()
 
         np.savetxt('p_sz.out', p_sz, fmt='%f')
-        print('p_u ', p_u)
         np.savetxt('p_zu.out', p_zu, fmt='%f')
         np.savetxt('p_lz.out', p_lz, fmt='%f')
         np.savetxt('p_wtz.out', p_wtz, fmt='%f')
@@ -275,7 +288,8 @@ class MusicRecommendationCalculator():
         # print('this is p_uslwtw')
         # print(p_uslwtw)
         # print(p_uslwtw.shape)
-        # np.savetxt('p_uslwtw.out', p_uslwtw, fmt='%.18e')
+        np.savetxt('p_uslwtw.out', p_uslwtw, fmt='%.18e')
+        np.savetxt('p_uslwt.out', p_uslwt, fmt='%.18e')
 
     def _sort_music_based_on_score(self):
         self.music_data = self.music_data.sort_values('score', ascending=False)
